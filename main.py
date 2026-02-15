@@ -1,14 +1,15 @@
 #uvicorn main:app --reload
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-import database
-from models import Client, Department, Employee, Contract
-
+from Routers import clients, contracts, departments, employees
 
 app = FastAPI()
+app.include_router(clients.router)
+app.include_router(contracts.router)
+app.include_router(departments.router)
+app.include_router(employees.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,125 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get('/clients',tags = ['Clients'], summary="Get full client list", status_code=200)
-def get_clients():
-    try:
-        clients = database.db_get_all_clients()
-        return clients
-    except Exception as e:
-        raise HTTPException(status_code=500, detail='database_error')
-
-@app.get('/clients/{client_id}',tags = ['Clients'], summary="Get client by id", status_code=200)
-def get_client(client_id:int):
-    try:
-        client = database.db_get_client(client_id)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail='database_error')
-    if client:
-        return client
-    else:
-        raise HTTPException(status_code=404, detail='Client not found')
-
-@app.post('/clients', tags = ['Clients'], summary="Create a new client", status_code=201)
-def create_client(new_client: Client):
-    try:
-        current_client = database.db_post_client(new_client.first_name, new_client.last_name, new_client.address, new_client.phone_number, new_client.email)
-        return {'status':'created', 'id': current_client}
-    except Exception as e:
-        raise HTTPException(500, detail='database_error')
-
-
-@app.get(path='/departments', tags=['Departments'], summary='Get departments list', status_code=200)
-def get_departments():
-    try:
-        department_list = database.db_get_all_departments()
-        return department_list
-    except Exception as e:
-        raise HTTPException(500, detail='database_error')
-
-@app.get(path = '/departments/{department_id}', tags=['Departments'], summary='Get department by id', status_code=200)
-def get_department(department_id:int):
-    try:
-        department = database.db_get_department(department_id)
-    except:
-        raise HTTPException(status_code=500, detail='database_error')
-    if department:
-        return department
-    else:
-        raise HTTPException(status_code=404, detail = 'department not found')
-
-@app.post(path='/departments',tags=['Departments'], summary = 'Create a new department', status_code=201)
-def create_department(new_department: Department):
-    try:
-        department = database.db_post_department(name = new_department.name, address = new_department.address, phone_number = new_department.phone_number)
-        return {'status': 'created', 'id': department}
-    except:
-        raise HTTPException(500, 'database_error')
-
-@app.get(path = '/employees', tags=['Employees'], summary = 'Get employees list', status_code=200)
-def get_all_employees():
-    try:
-        employees_list = database.db_get_all_employees()
-        return employees_list
-    except:
-        raise HTTPException(status_code=500, detail='database_error')
-
-@app.get(path = '/employees/{employee_id}', tags = ['Employees'], summary= 'Get employee by id', status_code=200)
-def get_employee(employee_id:int):
-    try:
-        employee = database.db_get_employee(employee_id)
-    except:
-        raise HTTPException(status_code=500, detail='database_error')
-    if employee:
-        return employee
-    else:
-        raise HTTPException(status_code=404, detail = 'employee not found')
-
-@app.post(path = '/employees', tags = ['Employees'], summary='Create a new employee', status_code=201)
-def create_employee(new_employee: Employee):
-    try:
-        employee = database.db_post_employee(
-            first_name = new_employee.first_name,
-            last_name = new_employee.last_name,
-            phone_number = new_employee.phone_number,
-            department_id = new_employee.department_id)
-        return {'status': 'created', 'id': employee}
-    except:
-        raise HTTPException(status_code=500, detail='database_error')
-
-@app.get(path = '/contracts', tags = ['Contracts'], summary = 'Get contracts list', status_code=200)
-def get_contracts():
-    try:
-        contracts_list = database.db_get_all_contracts()
-        return contracts_list
-    except:
-        raise HTTPException(status_code=500, detail='database_error')
-
-@app.get(path = '/contracts/{contract_id}', tags = ['Contracts'], summary = 'Get contract by id', status_code=200)
-def get_contract(contract_id:int):
-    try:
-        contract = database.db_get_contract(contract_id = contract_id)
-    except:
-        raise HTTPException(status_code=500, detail='database_error')
-    if contract:
-        return contract
-    else:
-        raise HTTPException(status_code=404, detail='contract not found')
-
-@app.post(path = '/contracts', tags =['Contracts'], summary = 'Create a new contract', status_code=201)
-def create_contract(new_contract: Contract):
-    try:
-        contract_id = database.db_post_contract(coverage_amount = new_contract.coverage_amount,
-                                                premium_amount = new_contract.premium_amount,
-                                                status = new_contract.status,
-                                                end_date = new_contract.end_date,
-                                                start_date = new_contract.start_date,
-                                                client_id = new_contract.client_id,
-                                                employee_id = new_contract.employee_id,
-                                                policy_type = new_contract.policy_type)
-        return contract_id
-    except:
-        raise HTTPException(status_code=500, detail='database_error')
 if __name__ == '__main__':
     uvicorn.run(app, reload = True)
 
