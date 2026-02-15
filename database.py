@@ -91,3 +91,24 @@ def db_post_employee(cursor, conn, first_name, last_name, phone_number, departme
     cursor.execute(sql, (first_name, last_name, phone_number, department_id))
     result = cursor.fetchone()
     return result
+
+@db_connection
+def db_get_all_contracts(cursor,conn):
+    sql = "SELECT * FROM contract"
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    return result
+
+@db_connection
+def db_get_contract(cursor, conn, contract_id):
+    sql = "SELECT * FROM contract WHERE contract_id = %s"
+    cursor.execute(sql,(contract_id,))
+    result = cursor.fetchone()
+    return result
+
+@db_connection
+def db_post_contract(cursor, conn, coverage_amount, premium_amount, status, end_date, client_id, employee_id,policy_type, start_date = None):
+    sql = "INSERT INTO Contract(coverage_amount, premium_amount, status, end_date, client_id, employee_id, start_date, policy_type) VALUES(%s,%s,%s,%s,%s,%s,%s,%s) RETURNING contract_id"
+    cursor.execute(sql,(coverage_amount, premium_amount, status, end_date, client_id, employee_id, start_date, policy_type))
+    result = cursor.fetchone()[0]
+    return result
