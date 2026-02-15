@@ -50,7 +50,25 @@ def db_post_client(cursor, conn, first_name, last_name, address, phone_number, e
     cursor.execute(sql, (first_name,last_name, address, phone_number, email))
     return cursor.fetchone()[0]
 
+@db_connection
+def db_get_all_departments(cursor, conn):
+    sql = "SELECT * FROM department"
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    return result
 
+@db_connection
+def db_get_department(cursor,conn,department_id):
+    sql = "SELECT * FROM department WHERE department_id = %s"
+    cursor.execute(sql, (department_id,))
+    result = cursor.fetchone()
+    return result
 
+@db_connection
+def db_post_department(cursor,conn,name,address,phone_number):
+    sql = "INSERT INTO department(name, address,phone_number) VALUES(%s, %s, %s) RETURNING department_id"
+    cursor.execute(sql, (name, address, phone_number))
+    result = cursor.fetchone()[0]
+    return result
 
 
