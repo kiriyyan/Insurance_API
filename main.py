@@ -4,11 +4,8 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-
-from models import Client, Department
-
 import database
-
+from models import Client, Department, Employee
 
 
 app = FastAPI()
@@ -75,6 +72,37 @@ def create_department(new_department: Department):
         return {'status': 'created', 'id': department}
     except:
         raise HTTPException(500, 'database_error')
+
+@app.get(path = '/employees', tags=['Employees'], summary = 'Get employees list', status_code=200)
+def get_all_employees():
+    try:
+        employees_list = database.db_get_all_employees()
+        return employees_list
+    except:
+        raise HTTPException(status_code=500, detail='database_error')
+
+@app.get(path = '/employees/{employee_id}', tags = ['Employees'], summary= 'Get employee by id', status_code=200)
+def get_employee(employee_id:int):
+    try:
+        employee = database.db_get_employee(employee_id)
+    except:
+        raise HTTPException(status_code=500, detail='database_error')
+    if employee:
+        return employee
+    else:
+        raise HTTPException(status_code=404, detail = 'employee not found')
+
+@app.post(path = '/employees', tags = ['Employees'], summary='Create a new employee', status_code=201)
+def create_employee(new_employee: Employee):
+    try:
+        employee = database.db_post_employee(
+            first_name = new_employee.first_name,
+            last_name = new_employee.last_name,
+            phone_number = new_employee.phone_number,
+            department_id = new_employee.department_id)
+        return {'status': 'created', 'id': employee}
+    except:
+        raise HTTPException(status_code=500, detail='database_error')
 
 
 if __name__ == '__main__':

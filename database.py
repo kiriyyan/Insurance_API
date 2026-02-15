@@ -71,4 +71,23 @@ def db_post_department(cursor,conn,name,address,phone_number):
     result = cursor.fetchone()[0]
     return result
 
+@db_connection
+def db_get_all_employees(cursor,conn):
+    sql = "SELECT * FROM employee"
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    return result
 
+@db_connection
+def db_get_employee(cursor, conn, employee_id):
+    sql = "SELECT * FROM employee WHERE employee_id = %s"
+    cursor.execute(sql,(employee_id,))
+    result = cursor.fetchone()
+    return result
+
+@db_connection
+def db_post_employee(cursor, conn, first_name, last_name, phone_number, department_id):
+    sql = "INSERT INTO employee(first_name, last_name, phone_number, department_id) VALUES (%s, %s, %s, %s) RETURNING employee_id"
+    cursor.execute(sql, (first_name, last_name, phone_number, department_id))
+    result = cursor.fetchone()
+    return result
