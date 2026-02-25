@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
-import database
-from models import Contract
+import database_old
+from schemas import Contract
 
 
 router = APIRouter(prefix ='/Contracts', tags = ['Contracts'])

@@ -1,37 +1,44 @@
-from pydantic import BaseModel, EmailStr, Field, condecimal
-from decimal import Decimal
-from datetime import date
-from enum import Enum
+from sqlalchemy import Table, Column, Integer, String, Numeric, Date, ForeignKey, MetaData, func, CheckConstraint, Enum
+from schemas import ContractStatus
 
-class Client(BaseModel):
-    first_name: str =  Field(max_length=64)
-    last_name: str =  Field(max_length=64)
-    address: str =  Field(max_length=256)
-    phone_number: str = Field(max_length= 20)
-    email: EmailStr = Field(max_length = 128)
+metadata_obj = MetaData()
 
-class Department(BaseModel):
-    name: str = Field(max_length=128)
-    address: str = Field(max_length=256)
-    phone_number: str = Field(max_length=20)
+clients_model = Table('clients',
+                      metadata_obj,
+                      Column('client_id', Integer, primary_key=True),
+                      Column('first_name', String(64), nullable=False),
+                      Column('last_name', String(64), nullable=False),
+                      Column('address', String(256), nullable=False),
+                      Column('phone_number', String(20), nullable=False),
+                      Column('email', String(128), nullable=False))
 
-class Employee(BaseModel):
-    first_name: str = Field(max_length=64)
-    last_name: str = Field(max_length=64)
-    phone_number: str = Field(max_length=20)
-    department_id: int
+departments_model = Table('department',
+                      metadata_obj,
+                      Column('department_id', Integer, primary_key=True),
+                      Column('name', String(128), nullable=False),
+                      Column('address', String(256), nullable=False),
+                      Column('phone_number', String(20), nullable=False))
 
-class ContractStatus(str, Enum):
-    ACTIVE = "active"
-    EXPIRED = "expired"
-    CANCELLED = "cancelled"
+employees_model = Table('employee',
+                      metadata_obj,
+                Column('employee_id', Integer, primary_key=True),
+                      Column('first_name', String(64), nullable=False),
+                      Column('last_name', String(64), nullable=False),
+                      Column('phone_number', String(20), nullable=False),
+                      Column('hire_date', Date, server_default=func.current_date()),
+                      Column('department_id', Integer, ForeignKey('department.department_id'))
+                        )
+contracts_model = Table('contract',
+                      metadata_obj,
+                      Column('contract_id', Integer, primary_key=True),
+                      Column('status', Enum(ContractStatus), nullable= False),
+                      Column('start_date', Date, nullable=False, server_default= func.current_date()),
+                      Column('end_date', Date, nullable=False),
+                      CheckConstraint('start_date<end_date', name = 'check_dates'), # как указать check(start_date<end_date)
+                      Column('coverage_amount', Numeric(15,2), nullable=False),
+                      Column('premium_amount', Numeric(15,2), nullable=False),
+                      Column('policy_type', String(128), nullable=False),
+                      Column('employee_id', Integer, ForeignKey('employee.employee_id')),
+                      Column('client_id', Integer, ForeignKey('clients.client_id'))
+                             )
 
-class Contract(BaseModel):
-    status: ContractStatus
-    start_date: date | None
-    end_date: date
-    coverage_amount: condecimal(max_digits=10, decimal_places=2)
-    premium_amount: condecimal(max_digits=10, decimal_places=2)
-    policy_type: str = Field(max_length=128)
-    client_id:int
-    employee_id:int

@@ -1,5 +1,5 @@
-import database
-from models import Client
+import database_old
+from schemas import Client
 from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix ='/clients', tags = ['Clients'])

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
-import database
-from models import Department
+import database_old
+from schemas import Department
 
 
 router = APIRouter(prefix ='/Departments', tags = ['Departments'])
